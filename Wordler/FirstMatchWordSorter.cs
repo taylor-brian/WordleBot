@@ -8,9 +8,19 @@ namespace Wordler
 {
     public class FirstMatchWordSorter : IWordSorter
     {
-        public List<string> SortWords(List<string> remainingWords, List<WordResult> wordResults)
+        public List<string> SortWords(List<string> potentialWords, List<string> selectableWords, List<WordResult> wordResults)
         {
-            return remainingWords;
+            Random rng = new Random(); 
+            int n = potentialWords.Count;
+            while (n > 1)
+            {
+                n--;
+                int k = rng.Next(n + 1);
+                var value = potentialWords[k];
+                potentialWords[k] = potentialWords[n];
+                potentialWords[n] = value;
+            }
+            return potentialWords;
         }
     }
 }

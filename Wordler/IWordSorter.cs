@@ -8,6 +8,6 @@ namespace Wordler
 {
     public interface IWordSorter
     {
-        public List<string> SortWords(List<string> remainingWords, List<WordResult> wordResults);
+        public List<string> SortWords(List<string> potentialWords, List<string> selectableWords, List<WordResult> wordResults);
     }
 }

@@ -8,7 +8,7 @@ namespace Wordler.Cmd
 {
     public class BatchRunner
     {
-        string _firstWord = "RAISE";
+        string _firstWord = "GLORY";
 
         public void BatchRun()
         {
@@ -16,22 +16,27 @@ namespace Wordler.Cmd
             IWordSorter wordSorter = new FirstMatchWordSorter();
             var wordsList = wordListProvider.GetWords();
             var firstMatchGuesses = 0;
-            var statisticalGuesses = 0;
+            var statisticalHardModeGuesses = 0;
+            var statisticalNormalModeGuesses = 0;
             var answers = GetAnswers();
 
             foreach (var answer in answers)
             {
                 IWordResultProvider wordChecker = new WordChecker(answer);
-                firstMatchGuesses += Run(new List<string>(wordsList), new FirstMatchWordSorter(), wordChecker);
-                statisticalGuesses += Run(new List<string>(wordsList), new StatisticalWordSorter(), wordChecker);
+                firstMatchGuesses += Run(wordsList, new FirstMatchWordSorter(), wordChecker, true);
+                statisticalHardModeGuesses += Run(wordsList, new StatisticalWordSorter(), wordChecker, true);
+                //statisticalNormalModeGuesses += Run(wordsList, new StatisticalWordSorter(), wordChecker, false);
             }
 
-            Console.WriteLine($"First Candidate Average: {(Convert.ToDecimal(firstMatchGuesses) / answers.Count):N1}");
-            Console.WriteLine($"Statistics-based Average: {(Convert.ToDecimal(statisticalGuesses) / answers.Count):N1}");
+            Console.WriteLine($"First Candidate Average (Hard): {(Convert.ToDecimal(firstMatchGuesses) / answers.Count):N1}");
+            Console.WriteLine($"Statistics-based Average (Hard): {(Convert.ToDecimal(statisticalHardModeGuesses) / answers.Count):N1}");
+            //Console.WriteLine($"Statistics-based Average (Normal): {(Convert.ToDecimal(statisticalNormalModeGuesses) / answers.Count):N1}");
         }
 
-        public int Run(List<string> wordsList, IWordSorter wordSorter, IWordResultProvider wordChecker)
+        private int Run(List<string> wordsList, IWordSorter wordSorter, IWordResultProvider wordChecker, bool hardMode)
         {
+            var potentialWords = new List<string>(wordsList);
+            var selectableWords = new List<string>(wordsList);
             var wordResults = new List<WordResult>();
             var wordListFilterer = new WordListFilterer();
             var attempt = 1;
@@ -40,18 +45,25 @@ namespace Wordler.Cmd
             {
                 var word =
                     attempt == 1 && _firstWord != null && wordSorter is StatisticalWordSorter ? _firstWord :
-                    wordSorter.SortWords(wordsList, wordResults).First();
+                    potentialWords.Count == 1 ? potentialWords[0] :
+                    wordSorter.SortWords(potentialWords, selectableWords, wordResults).First();
                 var result = wordChecker.CheckWord(word);
 
                 if (result.IsCorrect)
                 {
-                    Console.WriteLine($"{wordSorter.GetType().Name} found {word} in {attempt} guesses.");
+                    Console.WriteLine($"{wordSorter.GetType().Name} ({(hardMode ? "Hard" : "Normal")}) found {word} in {attempt} guesses.");
                     return attempt;
                 }
 
                 wordResults.Add(result);
-                wordsList.Remove(word);
-                wordsList = wordListFilterer.FilterList(wordsList, wordResults);
+                potentialWords.Remove(word);
+                potentialWords = wordListFilterer.FilterList(potentialWords, wordResults);
+                
+                if (hardMode)
+                {
+                    selectableWords = potentialWords;
+                }
+
                 attempt++;
             }
         }
@@ -60,106 +72,16 @@ namespace Wordler.Cmd
         {
             return new List<string>
             {
-            "EARLY",
-            "CHURN",
-            "WEEDY",
-            "STUMP",
-            "LEASE",
-            "WITTY",
-            "WIMPY",
-            "SPOOF",
-            "SANER",
-            "BLEND",
-            "SALSA",
-            "THICK",
-            "WARTY",
-            "MANIC",
-            "BLARE",
-            "SQUIB",
-            "SPOON",
-            "PROBE",
-            "CREPE",
-            "KNACK",
-            "FORCE",
-            "DEBUT",
-            "ORDER",
-            "HASTE",
-            "TEETH",
-            "AGENT",
-            "WIDEN",
-            "ICILY",
-            "SLICE",
-            "INGOT",
-            "CLASH",
-            "JUROR",
-            "BLOOD",
-            "ABODE",
-            "THROW",
-            "UNITY",
-            "PIVOT",
-            "SLEPT",
-            "TROOP",
-            "SPARE",
-            "SEWER",
-            "PARSE",
-            "MORPH",
-            "CACTI",
-            "TACKY",
-            "SPOOL",
-            "DEMON",
-            "MOODY",
-            "ANNEX",
-            "BEGIN",
-            "FUZZY",
-            "PATCH",
-            "WATER",
-            "LUMPY",
-            "ADMIN",
-            "OMEGA",
-            "LIMIT",
-            "TABBY",
-            "MACHO",
-            "AISLE",
-            "SKIFF",
-            "BASIS",
-            "PLANK",
-            "VERGE",
-            "BOTCH",
-            "CRAWL",
-            "LOUSY",
-            "SLAIN",
-            "CUBIC",
-            "RAISE",
-            "WRACK",
-            "GUIDE",
-            "FOIST",
-            "CAMEO",
-            "UNDER",
-            "ACTOR",
-            "REVUE",
-            "FRAUD",
-            "HARPY",
-            "SCOOP",
-            "CLIMB",
-            "REFER",
-            "OLDEN",
-            "CLERK",
-            "DEBAR",
-            "TALLY",
-            "ETHIC",
-            "CAIRN",
-            "TULLE",
-            "GHOUL",
-            "HILLY",
-            "CRUDE",
-            "APART",
-            "SCALE",
-            "OLDER",
-            "PLAIN",
-            "SPERM",
-            "BRINY",
-            "ABBOT",
-            "RERUN"
+"MOUNT",
+"PERKY",
+"COULD",
+"WRUNG",
+"LIGHT",
+"THOSE",
+"MOIST",
+"SHARD",
+"PLEAT"
+
             };
         }
     }
